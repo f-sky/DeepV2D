@@ -19,6 +19,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--inputdir', default='/home/xieyiming/repo/DeepV2D/7scenes_output')
 parser.add_argument('--fast', default=False, action='store_true')
 parser.add_argument('--inv_pose', default=False, action='store_true')
+parser.add_argument('--gt_depth', default=False, action='store_true')
 args = parser.parse_args()
 
 
@@ -35,12 +36,15 @@ def reconstruct_one_scene(scene_idx):
     images = []
     for scene_name, imgid1, imgid2 in ss.test_data:
         filepath = ss.file_paths[imgid1]
-        rgb, cam = ss.db.load_sample(filepath, 480, 640)
+        rgb, cam, depth_gt = ss.db.load_sample(filepath, 480, 640)
         images.append(rgb)
         depth_pred_path = osp.join(depth_dir, scene_name + "_" + str(imgid1) + "_" + str(imgid2) + '_depth.zarr')
         depth_pred = zarr.load(depth_pred_path)
         assert depth_pred is not None
-        depths.append(depth_pred[0] * 1000)
+        if not args.gt_depth:
+            depths.append(depth_pred[0] * 1000)
+        else:
+            depths.append(depth_gt * 1000)
         pose, intrinsics = cam
         camera_poses.append(pose)
         fx, fy, cx, cy = ss.intrinsics

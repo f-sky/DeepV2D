@@ -3,6 +3,8 @@ from copy import copy
 import numpy as np
 import os
 import cv2
+
+
 # import torch
 # from torch.utils.data import Dataset
 
@@ -16,7 +18,7 @@ class SevenScenes:
         super().__init__()
         self.db = LoadSevenScenes(root_dir)
         self.data_path = root_dir
-        self.inv_pose=inv_pose
+        self.inv_pose = inv_pose
         self.scene_idx = scene_idx
         self.scene, self.seq = self.db.test_seqs_list[scene_idx]
         self.scene_name = self.scene + '-' + self.seq
@@ -47,7 +49,7 @@ class SevenScenes:
         poses = []
         for i in [0, dt, -3 * s, -2 * s, -s, s, 2 * s, 3 * s]:
             otherid = min(max(1, i + imageid_1), num_frames - 1)
-            image, cam = self.db.load_sample(self.file_paths[otherid], 480, 640)
+            image, cam, depth = self.db.load_sample(self.file_paths[otherid], 480, 640)
             pose, intrinsics = cam
             images.append(image)
             if self.inv_pose:
@@ -113,11 +115,11 @@ class LoadSevenScenes(object):
         for filename in sorted(os.listdir(seq_dir)):
             if "color" in filename:
                 rgb_name = filename
-                # depth_name = rgb_name.replace("color", "depth")
+                depth_name = rgb_name.replace("color", "depth")
                 pose_name = rgb_name.replace("color.png", "pose.txt")
                 # pred_depth_name = rgb_name.replace("color", "pred_depth")
                 sample_path = {'rgb': os.path.join(seq_dir, rgb_name),
-                               # 'depth': os.path.join(seq_dir, depth_name),
+                               'depth': os.path.join(seq_dir, depth_name),
                                'pose': os.path.join(seq_dir, pose_name),
                                # 'pred_depth_name': pred_depth_name
                                }
@@ -139,12 +141,13 @@ class LoadSevenScenes(object):
 
         cam = self.scale_cam(cam, scale_x, scale_y)
         rgb = self.scale_img(rgb, image_height_expected, image_width_expected)
-        # rgb = self.normalize_image(rgb)
-        # depth = self.scale_img(depth, image_height_expected, image_width_expected, 'nearest')
+
+        depth = cv2.imread(sample_path['depth'], -1) / 1000.0
+        depth = self.scale_img(depth, image_height_expected, image_width_expected, 'nearest')
 
         # rgb, depth, cam = self.toTensor(rgb, depth, cam)
 
-        return rgb, cam
+        return rgb, cam, depth
 
     # def toTensor(self, rgb, depth, cam):
     #     rgb = torch.from_numpy(np.float32(rgb))
