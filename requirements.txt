@@ -1,0 +1,11 @@
+tqdm
+tensorflow-gpu==1.13.1 # cuda10.0
+h5py
+easydict
+scipy
+opencv-python
+pyyaml
+toposort
+vtk
+opend3d
+zarr
