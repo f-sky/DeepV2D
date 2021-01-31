@@ -34,7 +34,7 @@ def make_predictions(args):
         deepv2d.set_session(sess)
 
         for scene_idx in range(18):
-            db = SevenScenes(args.dataset_dir, scene_idx)
+            db = SevenScenes(args.dataset_dir, scene_idx, args.inv_pose)
             bar = trange(len(db.test_data))
             for i in bar:
                 test_data_blob = db[i]
@@ -71,9 +71,8 @@ if __name__ == '__main__':
     parser.add_argument('--mode', default='keyframe', help='config file used to train the model')
     parser.add_argument('--fcrn', action="store_true", help='use single image depth initializiation')
     parser.add_argument('--ignore_cache', action="store_true")
-    # parser.add_argument('--start', type=float, default=0.0)
-    # parser.add_argument('--input_campose', default=True, action='store_true')
     parser.add_argument('--output_dir', default='7scenes_output', type=str)
+    parser.add_argument('--inv_pose', default=False, action='store_true')
     args = parser.parse_args()
 
     make_predictions(args)

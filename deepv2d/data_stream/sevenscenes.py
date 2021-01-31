@@ -12,10 +12,11 @@ class SevenScenes(Dataset):
     def __len__(self) -> int:
         return len(self.test_data)
 
-    def __init__(self, root_dir, scene_idx: int) -> None:
+    def __init__(self, root_dir, scene_idx: int, inv_pose: bool) -> None:
         super().__init__()
         self.db = LoadSevenScenes(root_dir)
         self.data_path = root_dir
+        self.inv_pose=inv_pose
         self.scene_idx = scene_idx
         self.scene, self.seq = self.db.test_seqs_list[scene_idx]
         self.scene_name = self.scene + '-' + self.seq
@@ -49,14 +50,16 @@ class SevenScenes(Dataset):
             image, cam = self.db.load_sample(self.file_paths[otherid], 480, 640)
             pose, intrinsics = cam
             images.append(image)
-            # pose = np.linalg.inv(pose)  # todo:check?
+            if self.inv_pose:
+                pose = np.linalg.inv(pose)  # todo:check?
             poses.append(pose)
         poses = np.stack(poses)
 
         pose1 = self.db.load_sample(self.file_paths[imageid_1], 480, 640)[1][0]
         pose2 = self.db.load_sample(self.file_paths[imageid_2], 480, 640)[1][0]
-        # pose1 = np.linalg.inv(pose1)
-        # pose2 = np.linalg.inv(pose2)
+        if self.inv_pose:
+            pose1 = np.linalg.inv(pose1)
+            pose2 = np.linalg.inv(pose2)
         pose_gt = np.dot(pose2, np.linalg.inv(pose1))
 
         images = np.stack(images, axis=0).astype(np.uint8)
