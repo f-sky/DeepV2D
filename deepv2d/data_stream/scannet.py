@@ -98,18 +98,18 @@ class ScanNet:
             ixs = sorted([int(os.path.basename(x).split('.')[0]) for x in imfiles])
 
             images = []
-            for i in tqdm(ixs[::2], leave=False):
+            for i in ixs[::2]:
                 imfile = os.path.join(scan_path, 'color', '%d.jpg' % i)
                 images.append(imfile)
 
             poses = []
-            for i in tqdm(ixs[::2], leave=False):
+            for i in ixs[::2]:
                 posefile = os.path.join(scan_path, 'pose', '%d.txt' % i)
                 pose = np.loadtxt(posefile, delimiter=' ').astype(np.float32)
                 poses.append(np.linalg.inv(pose))  # convert c2w->w2c
 
             depths = []
-            for i in tqdm(ixs[::2], leave=False):
+            for i in ixs[::2]:
                 depthfile = os.path.join(scan_path, 'depth', '%d.png' % i)
                 depths.append(depthfile)
 
@@ -129,7 +129,7 @@ class ScanNet:
         data_id = 0
         print('building dataset index...')
         for scan in tqdm(sorted(os.listdir(self.dataset_path))):
-
+            if not scan.startswith('scene'): continue
             scanid = int(re.findall(r'scene(.+?)_', scan)[0])
             if scanid > 660:
                 continue

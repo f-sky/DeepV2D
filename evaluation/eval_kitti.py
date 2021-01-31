@@ -2,7 +2,7 @@ import os.path as osp
 import numpy as np
 import sys
 
-from dl_ext.vision_ext.datasets.kitti.load import load_calib
+from dl_ext.vision_ext.datasets.kitti.io import load_calib
 from tqdm import trange
 
 sys.path.append('deepv2d')
