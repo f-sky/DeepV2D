@@ -148,7 +148,7 @@ class LoadSevenScenes(object):
         scale_y = float(image_height_expected) / original_image_height
 
         cam = self.scale_cam(cam, scale_x, scale_y)
-        rgb = self.scale_img(rgb, image_height_expected, image_width_expected, 'linear')
+        rgb = self.scale_img(rgb, image_height_expected, image_width_expected)
         # rgb = self.normalize_image(rgb)
         # depth = self.scale_img(depth, image_height_expected, image_width_expected, 'nearest')
 
