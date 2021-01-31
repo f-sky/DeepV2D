@@ -48,28 +48,15 @@ class SevenScenes(Dataset):
             otherid = min(max(1, i + imageid_1), num_frames - 1)
             image, cam = self.db.load_sample(self.file_paths[otherid], 480, 640)
             pose, intrinsics = cam
-            # image_file = os.path.join(self.data_path, self.scene, 'images', "{:0>5d}.jpg".format(otherid))
-            # image = cv2.imread(image_file)
-            # image = cv2.resize(image, (640, 480))
             images.append(image)
-            # pose = np.loadtxt(os.path.join(self.data_path, self.scene, 'poses', "{:0>5d}.txt".format(otherid)),
-            #                   dtype='f', delimiter=' ')
-            pose = np.linalg.inv(pose)  # todo:check?
+            # pose = np.linalg.inv(pose)  # todo:check?
             poses.append(pose)
         poses = np.stack(poses)
 
-        # depth_file = os.path.join(scandir, 'depth', '%d.png' % imageid_1)
-        # depth = cv2.imread(depth_file, cv2.IMREAD_ANYDEPTH)
-        # depth = (depth / 1000.0).astype(np.float32)
-
-        # pose1 = np.loadtxt(os.path.join(self.data_path, self.scene, 'poses', "{:0>5d}.txt".format(imageid_1)),
-        #                    dtype='f', delimiter=' ')
-        # pose2 = np.loadtxt(os.path.join(self.data_path, self.scene, 'poses', "{:0>5d}.txt".format(imageid_2)),
-        #                    dtype='f', delimiter=' ')
         pose1 = self.db.load_sample(self.file_paths[imageid_1], 480, 640)[1][0]
         pose2 = self.db.load_sample(self.file_paths[imageid_2], 480, 640)[1][0]
-        pose1 = np.linalg.inv(pose1)
-        pose2 = np.linalg.inv(pose2)
+        # pose1 = np.linalg.inv(pose1)
+        # pose2 = np.linalg.inv(pose2)
         pose_gt = np.dot(pose2, np.linalg.inv(pose1))
 
         images = np.stack(images, axis=0).astype(np.uint8)
