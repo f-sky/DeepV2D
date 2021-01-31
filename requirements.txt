@@ -7,5 +7,5 @@ opencv-python
 pyyaml
 toposort
 vtk
-opend3d
+open3d
 zarr

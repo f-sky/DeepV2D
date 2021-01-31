@@ -5,6 +5,9 @@ import tensorflow as tf
 import tensorflow.contrib.graph_editor as ge
 import time
 import sys
+
+from tqdm import tqdm
+
 sys.setrecursionlimit(10000)
 # refers back to current module if we decide to split helpers out
 util = sys.modules[__name__]
@@ -250,7 +253,7 @@ def gradients(ys, xs, grad_ys=None, checkpoints='collection', **kwargs):
 
     # incorporate derivatives flowing through the checkpointed nodes
     checkpoints_sorted_lists = tf_toposort(checkpoints, within_ops=fwd_ops)
-    for ts in checkpoints_sorted_lists[::-1]:
+    for ts in tqdm(checkpoints_sorted_lists[::-1]):
         debug_print("Processing list %s", ts)
         checkpoints_other = [r for r in checkpoints if r not in ts]
         checkpoints_disconnected_other = [checkpoints_disconnected[r] for r in checkpoints_other]

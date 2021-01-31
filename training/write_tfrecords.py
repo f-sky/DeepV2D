@@ -1,4 +1,7 @@
 import sys
+
+from tqdm import trange
+
 sys.path.append('deepv2d')
 
 import tensorflow as tf
@@ -28,7 +31,6 @@ def to_tfrecord(data_blob):
     filled = np.array(data_blob['filled'], dtype=np.float32).tobytes()
     intrinsics = np.array(data_blob['intrinsics'], dtype=np.float32).tobytes()
 
-
     example = tf.train.Example(features=tf.train.Features(feature={
         'id': tf.train.Feature(bytes_list=tf.train.BytesList(value=[id])),
         'dim': tf.train.Feature(bytes_list=tf.train.BytesList(value=[dim])),
@@ -43,7 +45,6 @@ def to_tfrecord(data_blob):
 
 
 def main_nyu(args):
-
     np.random.seed(1234)
 
     db = NYU(args.dataset_dir)
@@ -52,8 +53,8 @@ def main_nyu(args):
 
     tfwriter = tf.python_io.TFRecordWriter(args.records_file)
     for i in range(len(ix)):
-        if i%100 == 0:
-            print("Writing example %d of %d"%(i, len(ix)))
+        if i % 100 == 0:
+            print("Writing example %d of %d" % (i, len(ix)))
         data_blob = db[ix[i]]
         data_blob['id'] = ix[i]
         record = to_tfrecord(data_blob)
@@ -63,7 +64,6 @@ def main_nyu(args):
 
 
 def main_kitti(args):
-
     np.random.seed(1234)
 
     db = KittiRaw(args.dataset_dir)
@@ -71,16 +71,15 @@ def main_kitti(args):
     np.random.shuffle(ix)
 
     tfwriter = tf.python_io.TFRecordWriter(args.records_file)
-    for i in range(len(ix)):
-        if i%100 == 0:
-            print("Writing example %d of %d"%(i, len(ix)))
+    for i in trange(len(ix)):
+        # if i % 100 == 0:
+        #     print("Writing example %d of %d" % (i, len(ix)))
         data_blob = db[ix[i]]
         data_blob['id'] = ix[i]
         record = to_tfrecord(data_blob)
         tfwriter.write(record.SerializeToString())
 
     tfwriter.close()
-
 
 
 if __name__ == '__main__':
