@@ -46,7 +46,8 @@ class SevenScenes(Dataset):
         poses = []
         for i in [0, dt, -3 * s, -2 * s, -s, s, 2 * s, 3 * s]:
             otherid = min(max(1, i + imageid_1), num_frames - 1)
-            image, pose = self.db.load_sample(self.file_paths[otherid], 480, 640)
+            image, cam = self.db.load_sample(self.file_paths[otherid], 480, 640)
+            pose, intrinsics = cam
             # image_file = os.path.join(self.data_path, self.scene, 'images', "{:0>5d}.jpg".format(otherid))
             # image = cv2.imread(image_file)
             # image = cv2.resize(image, (640, 480))
@@ -165,14 +166,15 @@ class LoadSevenScenes(object):
     #
     #     return rgb, depth, cam
 
-    def scale_img(self, image, expected_height, expected_width, interpolation):
+    def scale_img(self, image, expected_height, expected_width):
+        return cv2.resize(image, (expected_width, expected_height))
         # although opencv load image in shape (height, width, channel), cv2.resize still need shape (width, height)
-        if interpolation == 'linear':
-            return cv2.resize(image, (expected_width, expected_height), interpolation=cv2.INTER_LINEAR)
-        if interpolation == 'nearest':
-            return cv2.resize(image, (expected_width, expected_height), interpolation=cv2.INTER_NEAREST)
-        if interpolation is None:
-            raise Exception('interpolation cannot be None')
+        # if interpolation == 'linear':
+        #     return cv2.resize(image, (expected_width, expected_height), interpolation=cv2.INTER_LINEAR)
+        # if interpolation == 'nearest':
+        #     return cv2.resize(image, (expected_width, expected_height), interpolation=cv2.INTER_NEAREST)
+        # if interpolation is None:
+        #     raise Exception('interpolation cannot be None')
 
     def normalize_image(self, img):
         """
