@@ -66,7 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', default='cfgs/scannet.yaml', help='config file used to train the model')
     parser.add_argument('--model', default='models/scannet.ckpt', help='path to model checkpoint')
     parser.add_argument('--dataset_dir', default='/data/7scenes')
-    parser.add_argument('--scene_idx', default=0)
+    # parser.add_argument('--scene_idx', default=0)
 
     parser.add_argument('--mode', default='keyframe', help='config file used to train the model')
     parser.add_argument('--fcrn', action="store_true", help='use single image depth initializiation')
