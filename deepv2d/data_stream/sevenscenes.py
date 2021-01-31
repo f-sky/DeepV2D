@@ -49,18 +49,17 @@ class SevenScenes(Dataset):
             image, cam = self.db.load_sample(self.file_paths[otherid], 480, 640)
             pose, intrinsics = cam
             images.append(image)
-            # pose = np.linalg.inv(pose)  # todo:check?
+            pose = np.linalg.inv(pose)  # todo:check?
             poses.append(pose)
         poses = np.stack(poses)
 
         pose1 = self.db.load_sample(self.file_paths[imageid_1], 480, 640)[1][0]
         pose2 = self.db.load_sample(self.file_paths[imageid_2], 480, 640)[1][0]
-        # pose1 = np.linalg.inv(pose1)
-        # pose2 = np.linalg.inv(pose2)
+        pose1 = np.linalg.inv(pose1)
+        pose2 = np.linalg.inv(pose2)
         pose_gt = np.dot(pose2, np.linalg.inv(pose1))
 
         images = np.stack(images, axis=0).astype(np.uint8)
-        # depth = depth.astype(np.float32)
 
         data_blob = {
             'images': images,
@@ -124,8 +123,7 @@ class LoadSevenScenes(object):
 
     def load_sample(self, sample_path, image_height_expected, image_width_expected):
         rgb = cv2.imread(sample_path['rgb'], -1)
-        rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
-        # depth = cv2.imread(sample_path['depth'], -1) / 1000.0
+        # rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
         pose = self.read_pose_file(sample_path['pose'])
 
         extrinsics = self.pose2extrinsics(pose)
@@ -165,17 +163,17 @@ class LoadSevenScenes(object):
         # if interpolation is None:
         #     raise Exception('interpolation cannot be None')
 
-    def normalize_image(self, img):
-        """
-        Zero mean and Unit variance normalization to input image
-        :param img: input image
-        :return: normalized image
-        """
-        img = img / 255.
-        mean = [0.485, 0.456, 0.406]
-        std = [0.229, 0.224, 0.225]
-        img_normal = (img - mean) / std
-        return img_normal.astype(np.float32)
+    # def normalize_image(self, img):
+    #     """
+    #     Zero mean and Unit variance normalization to input image
+    #     :param img: input image
+    #     :return: normalized image
+    #     """
+    #     img = img / 255.
+    #     mean = [0.485, 0.456, 0.406]
+    #     std = [0.229, 0.224, 0.225]
+    #     img_normal = (img - mean) / std
+    #     return img_normal.astype(np.float32)
 
     def read_pose_file(self, filepath):
         """Read in the pose/*.txt and parse into a ndarray"""
