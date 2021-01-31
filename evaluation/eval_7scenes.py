@@ -72,7 +72,7 @@ if __name__ == '__main__':
     parser.add_argument('--fcrn', action="store_true", help='use single image depth initializiation')
     parser.add_argument('--ignore_cache', action="store_true")
     parser.add_argument('--output_dir', default='7scenes_output', type=str)
-    parser.add_argument('--inv_pose', default=False, action='store_true')
+    parser.add_argument('--inv_pose', default=False, action='store_true')  # should be False
     args = parser.parse_args()
 
     make_predictions(args)
