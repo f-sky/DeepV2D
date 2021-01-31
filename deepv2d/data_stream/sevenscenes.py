@@ -143,7 +143,7 @@ class LoadSevenScenes(object):
         rgb = self.scale_img(rgb, image_height_expected, image_width_expected)
 
         depth = cv2.imread(sample_path['depth'], -1) / 1000.0
-        depth = self.scale_img(depth, image_height_expected, image_width_expected, 'nearest')
+        depth = self.scale_img(depth, image_height_expected, image_width_expected)
 
         # rgb, depth, cam = self.toTensor(rgb, depth, cam)
 
