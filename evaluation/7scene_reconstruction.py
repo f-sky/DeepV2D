@@ -39,10 +39,12 @@ def reconstruct_one_scene(scene_idx):
         images.append(rgb)
         depth_pred_path = osp.join(depth_dir, scene_name + "_" + str(imgid1) + "_" + str(imgid2) + '_depth.zarr')
         depth_pred = zarr.load(depth_pred_path)
+        pose_pred_path = osp.join(depth_dir, scene_name + "_" + str(imgid1) + "_" + str(imgid2) + '_pose.zarr')
+        pose_pred = zarr.load(pose_pred_path)
         assert depth_pred is not None
         depths.append(depth_pred[0] * 1000)
-        # pose_pred_path = scene_name + "_" + str(imgid1) + "_" + str(imgid2) + '_pose.zarr'
-        # pose_pred = zarr.load(pose_pred_path)
+        import pdb
+        pdb.set_trace()
         pose, intrinsics = cam
         camera_poses.append(pose)
         fx, fy, cx, cy = ss.intrinsics
