@@ -4,7 +4,7 @@ SO3 and SE3 operations, exponentials and logarithms adapted from Sophus
 
 import numpy as np
 import tensorflow as tf
-from utils.einsum import *
+from deepv2d.utils.einsum import *
 
 from tensorflow.python.framework import function
 

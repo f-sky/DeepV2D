@@ -1,33 +1,33 @@
-import tensorflow as tf
-import numpy as np
+# import tensorflow as tf
+# import numpy as np
 
 import os
 import cv2
 
-from core.config import cfg
-from geometry.transformation import *
-
+# from deepv2d.core.config import cfg
+from deepv2d.geometry.transformation import *
 
 FLIP_OFFSET = 100000
 
+
 def random_frame_idx(n, m):
-    ix = [0] + np.random.choice(range(1,n), m, replace=False).tolist()
+    ix = [0] + np.random.choice(range(1, n), m, replace=False).tolist()
     return np.array(ix, dtype='int32')
 
 
 def _read_prediction_py(id, filled):
-    depth_path = os.path.join(cfg.TMP_DIR, "%d.png"%id)
+    depth_path = os.path.join(cfg.TMP_DIR, "%d.png" % id)
     if not os.path.isfile(depth_path):
         return filled
 
     depth = cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH)
-    return (depth/5000.0).astype(np.float32)
+    return (depth / 5000.0).astype(np.float32)
 
 
 def _write_prediction_py(ids, prediction):
     for i in range(ids.shape[0]):
-        depth = (prediction[i]*5000).astype(np.uint16)
-        depth_path = os.path.join(cfg.TMP_DIR, "%d.png"%ids[i])
+        depth = (prediction[i] * 5000).astype(np.uint16)
+        depth_path = os.path.join(cfg.TMP_DIR, "%d.png" % ids[i])
         cv2.imwrite(depth_path, depth)
 
     return np.int32(1.0)
@@ -43,7 +43,7 @@ class DataLayer(object):
         # randomly shift gamma
         images = tf.cast(images, 'float32')
         random_gamma = tf.random_uniform([], 0.9, 1.1)
-        images = 255.0*((images/255.0)**random_gamma)
+        images = 255.0 * ((images / 255.0) ** random_gamma)
 
         # randomly shift brightness
         random_brightness = tf.random_uniform([], 0.8, 1.2)
@@ -58,10 +58,9 @@ class DataLayer(object):
 
         return images
 
-
     def scale(self, id, images, poses, depth_gt, filled, intrinsics):
         """ Random scale augumentation """
-        
+
         if len(cfg.INPUT.SCALES) > 1:
             scales = tf.constant(cfg.INPUT.SCALES)
             scale_ix = tf.random.uniform([], 0, len(cfg.INPUT.SCALES), dtype=tf.int32)
@@ -72,14 +71,14 @@ class DataLayer(object):
             ht1 = tf.cast(ht * s, tf.int32)
             wd1 = tf.cast(wd * s, tf.int32)
 
-            dx = (wd1 - wd) // 2 
+            dx = (wd1 - wd) // 2
             dy = (ht1 - ht) // 2
 
-            images = tf.image.resize_bilinear(images, [ht1, wd1])[:, dy:dy+ht, dx:dx+wd]
-            depth_gt = tf.image.resize_nearest_neighbor(depth_gt[tf.newaxis], [ht1, wd1])[:, dy:dy+ht, dx:dx+wd]
-            filled = tf.image.resize_nearest_neighbor(filled[tf.newaxis], [ht1, wd1])[:, dy:dy+ht, dx:dx+wd]
+            images = tf.image.resize_bilinear(images, [ht1, wd1])[:, dy:dy + ht, dx:dx + wd]
+            depth_gt = tf.image.resize_nearest_neighbor(depth_gt[tf.newaxis], [ht1, wd1])[:, dy:dy + ht, dx:dx + wd]
+            filled = tf.image.resize_nearest_neighbor(filled[tf.newaxis], [ht1, wd1])[:, dy:dy + ht, dx:dx + wd]
 
-            images = tf.reshape(images,  [cfg.INPUT.SAMPLES+1, ht, wd, 3])
+            images = tf.reshape(images, [cfg.INPUT.SAMPLES + 1, ht, wd, 3])
             depth_gt = tf.reshape(depth_gt, [ht, wd, 1])
             filled = tf.reshape(filled, [ht, wd, 1])
 
@@ -87,7 +86,6 @@ class DataLayer(object):
             id = id + tf.constant(FLIP_OFFSET) * scale_ix
 
         return id, images, poses, depth_gt, filled, intrinsics
-
 
     def flip(self, id, images, poses, depth_gt, filled, intrinsics):
 
@@ -106,19 +104,18 @@ class DataLayer(object):
 
         return id, images, poses, depth_gt, filled, intrinsics
 
-
     def read_example(self, tfrecord_serialized):
 
         tfrecord_features = tf.parse_single_example(tfrecord_serialized,
-            features={
-                'id': tf.FixedLenFeature([], tf.string),
-                'dim': tf.FixedLenFeature([], tf.string),
-                'images': tf.FixedLenFeature([], tf.string),
-                'poses': tf.FixedLenFeature([], tf.string),
-                'depth': tf.FixedLenFeature([], tf.string),
-                'filled': tf.FixedLenFeature([], tf.string),
-                'intrinsics': tf.FixedLenFeature([], tf.string),
-            }, name='features')
+                                                    features={
+                                                        'id': tf.FixedLenFeature([], tf.string),
+                                                        'dim': tf.FixedLenFeature([], tf.string),
+                                                        'images': tf.FixedLenFeature([], tf.string),
+                                                        'poses': tf.FixedLenFeature([], tf.string),
+                                                        'depth': tf.FixedLenFeature([], tf.string),
+                                                        'filled': tf.FixedLenFeature([], tf.string),
+                                                        'intrinsics': tf.FixedLenFeature([], tf.string),
+                                                    }, name='features')
 
         id = tf.decode_raw(tfrecord_features['id'], tf.int32)
         dim = tf.decode_raw(tfrecord_features['dim'], tf.int32)
@@ -145,13 +142,13 @@ class DataLayer(object):
         # randomly sample from neighboring frames (used for NYU)
         if cfg.INPUT.SAMPLES > 0:
             ix = tf.py_func(random_frame_idx, [cfg.INPUT.FRAMES, cfg.INPUT.SAMPLES], tf.int32)
-            ix = tf.reshape(ix, [cfg.INPUT.SAMPLES+1])
+            ix = tf.reshape(ix, [cfg.INPUT.SAMPLES + 1])
 
             images = tf.gather(images, ix, axis=0)
             poses = tf.gather(poses, ix, axis=0)
 
         do_augument = tf.random_uniform([], 0, 1)
-        images = tf.cond(do_augument<0.5, lambda: self.augument(images), lambda: images)
+        images = tf.cond(do_augument < 0.5, lambda: self.augument(images), lambda: images)
 
         id, images, poses, depth, filled, intrinsics = \
             self.scale(id, images, poses, depth, filled, intrinsics)
@@ -161,7 +158,6 @@ class DataLayer(object):
 
         return id, images, poses, depth, filled, prediction, intrinsics
 
-
     def next(self):
 
         filename_queue = tf.train.string_input_producer([self.tfrecords_file])
@@ -170,16 +166,15 @@ class DataLayer(object):
         _, serialized = tfreader.read(filename_queue)
 
         example = self.read_example(serialized)
-        id, images, poses, depth_gt, filled, depth_pred, intrinsics \
-            = tf.train.batch(example, batch_size=self.batch_size, num_threads=2, capacity=64)
+        # id, images, poses, depth_gt, filled, depth_pred, intrinsics = tf.train.batch(example, batch_size=self.batch_size, num_threads=2, capacity=64)
+        id, images, poses, depth_gt, filled, depth_pred, intrinsics = tf.train.batch(example,
+                                                                                     batch_size=self.batch_size)
 
         images = tf.cast(images, tf.float32)
         return id, images, poses, depth_gt, filled, depth_pred, intrinsics
 
-
     def write(self, id, prediction):
         return tf.py_func(_write_prediction_py, [id, prediction], tf.int32)
-
 
 
 def scale(id, images, poses, depth_gt, filled, pred, intrinsics):
@@ -196,17 +191,17 @@ def scale(id, images, poses, depth_gt, filled, pred, intrinsics):
         ht1 = tf.cast(ht * s, tf.int32)
         wd1 = tf.cast(wd * s, tf.int32)
 
-        dx = (wd1 - wd) // 2 
+        dx = (wd1 - wd) // 2
         dy = (ht1 - ht) // 2
 
         depth_gt = tf.reshape(depth_gt, [1, ht, wd, 1])
         filled = tf.reshape(filled, [1, ht, wd, 1])
 
-        images = tf.image.resize_bilinear(images, [ht1, wd1])[:, dy:dy+ht, dx:dx+wd]
-        depth_gt = tf.image.resize_nearest_neighbor(depth_gt, [ht1, wd1])[:, dy:dy+ht, dx:dx+wd]
-        filled = tf.image.resize_nearest_neighbor(filled, [ht1, wd1])[:, dy:dy+ht, dx:dx+wd]
+        images = tf.image.resize_bilinear(images, [ht1, wd1])[:, dy:dy + ht, dx:dx + wd]
+        depth_gt = tf.image.resize_nearest_neighbor(depth_gt, [ht1, wd1])[:, dy:dy + ht, dx:dx + wd]
+        filled = tf.image.resize_nearest_neighbor(filled, [ht1, wd1])[:, dy:dy + ht, dx:dx + wd]
 
-        images = tf.reshape(images,  [4, ht, wd, 3])
+        images = tf.reshape(images, [4, ht, wd, 3])
         depth_gt = tf.reshape(depth_gt, [ht, wd, 1])
         filled = tf.reshape(filled, [ht, wd, 1])
         pred = tf.reshape(pred, [ht, wd, 1])
@@ -217,12 +212,11 @@ def scale(id, images, poses, depth_gt, filled, pred, intrinsics):
     return id, images, poses, depth_gt, filled, pred, intrinsics
 
 
-
 def augument(images):
     # randomly shift gamma
     images = tf.cast(images, 'float32')
     random_gamma = tf.random_uniform([], 0.9, 1.1)
-    images = 255.0*((images/255.0)**random_gamma)
+    images = 255.0 * ((images / 255.0) ** random_gamma)
 
     # randomly shift brightness
     random_brightness = tf.random_uniform([], 0.8, 1.2)
@@ -255,15 +249,15 @@ class DBDataLayer:
         generator_data_type = (tf.uint8, tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, tf.int32)
         training_set = tf.data.Dataset.from_generator(lambda: training_generator, generator_data_type)
         training_set = training_set.map(prepare_inputs)
-        
+
         training_set = training_set.prefetch(buffer_size=20)
         training_set = training_set.batch(batch_size)
         self.training_iterator = training_set.make_initializable_iterator()
-        
+
     def next(self):
         frames, height, width = self.db.shape()
         images, poses, depth, filled, pred, intrinsics, ids = self.training_iterator.get_next()
-        
+
         images.set_shape(tf.TensorShape([self.batch_size, frames, height, width, 3]))
         poses.set_shape(tf.TensorShape([self.batch_size, frames, 4, 4]))
         depth.set_shape(tf.TensorShape([self.batch_size, height, width, 1]))

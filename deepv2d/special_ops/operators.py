@@ -2,29 +2,30 @@ import tensorflow as tf
 import os.path as osp
 
 from tensorflow.python.framework import ops
-from utils.bilinear_sampler import *
+from deepv2d.utils.bilinear_sampler import *
 
-filename = osp.join(osp.dirname(__file__), 'backproject.so')
-if osp.isfile(filename):
-    _backproject_module = tf.load_op_library(filename)
-
-    back_project = _backproject_module.back_project
-    back_project_grad = _backproject_module.back_project_grad
-
-
-    @ops.RegisterGradient("BackProject")
-    def _back_project_grad(op, grad):
-        inputs = op.inputs[0]
-        coords = op.inputs[1]
-        inputs_grad, coords_grad = back_project_grad(inputs, coords, grad)
-
-        return [inputs_grad, coords_grad]
-
-    use_cuda_backproject = True
-
-else:
-    print("Could not import cuda Backproject Module, using python implementation")
-    use_cuda_backproject = False
+filename = osp.join(osp.dirname(osp.abspath(__file__)), 'backproject.so')
+# if osp.exists(filename):
+# # if osp.isfile(filename):
+#     _backproject_module = tf.load_op_library(filename)
+#
+#     back_project = _backproject_module.back_project
+#     back_project_grad = _backproject_module.back_project_grad
+#
+#
+#     @ops.RegisterGradient("BackProject")
+#     def _back_project_grad(op, grad):
+#         inputs = op.inputs[0]
+#         coords = op.inputs[1]
+#         inputs_grad, coords_grad = back_project_grad(inputs, coords, grad)
+#
+#         return [inputs_grad, coords_grad]
+#
+#     use_cuda_backproject = True
+#
+# else:
+#     print("Could not import cuda Backproject Module, using python implementation")
+use_cuda_backproject = False
 
 
 def adj_to_inds(num=-1, adj_list=None):
@@ -93,7 +94,7 @@ def backproject_avg(Ts, depths, intrinsics, fmaps, adj_list=None):
     return volume
 
 
-def backproject_cat(Ts, depths, intrinsics, fmaps):
+def backproject_cat(Ts, depths, intrinsics, fmaps,self=None):
     dim = fmaps.get_shape().as_list()[-1]
     dd = depths.get_shape().as_list()[0]
     batch, num, ht, wd, _ = tf.unstack(tf.shape(fmaps), num=5)
@@ -109,7 +110,7 @@ def backproject_cat(Ts, depths, intrinsics, fmaps):
     # compute backprojected coordinates
     Tij = Ts.gather(jj) * Ts.gather(ii).inv()
     coords = Tij.transform(depths, intrinsics)
-
+    self.coords=coords
     if use_cuda_backproject:
         coords = tf.transpose(coords, [0, 3, 4, 2, 1, 5])
         fmaps = tf.transpose(fmaps, [0, 2, 3, 1, 4])
@@ -117,7 +118,7 @@ def backproject_cat(Ts, depths, intrinsics, fmaps):
 
     else:
         coords = tf.transpose(coords, [0, 1, 3, 4, 2, 5])
-        volume = bilinear_sampler(fmaps, coords, batch_dims=2)
+        volume = bilinear_sampler(fmaps, coords, batch_dims=2,self=self)
         volume = tf.transpose(volume, [0, 2, 3, 4, 1, 5])
 
     volume = tf.reshape(volume, [batch, ht, wd, dd, dim*num])

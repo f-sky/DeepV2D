@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from utils.einsum import einsum
+from deepv2d.utils.einsum import einsum
 
 
 MIN_DEPTH = 0.1

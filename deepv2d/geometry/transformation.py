@@ -1,10 +1,10 @@
-import tensorflow as tf
-import numpy as np
+# import tensorflow as tf
+# import numpy as np
 
-from special_ops.operators import clip_dangerous_gradients
-from utils.einsum import einsum
+from deepv2d.special_ops.operators import clip_dangerous_gradients
+# from deepv2d.utils.einsum import einsum
 
-from core.config import cfg
+from deepv2d.core.config import cfg
 from .se3 import *
 from .intrinsics import *
 from . import projective_ops as pops

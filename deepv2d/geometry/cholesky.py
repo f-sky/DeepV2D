@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from utils.einsum import einsum
+from deepv2d.utils.einsum import einsum
 
 
 @tf.custom_gradient

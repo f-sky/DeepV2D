@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from utils.einsum import einsum
+from deepv2d.utils.einsum import einsum
 
 def intrinsics_vec_to_matrix(kvec):
     fx, fy, cx, cy = tf.unstack(kvec, num=4, axis=-1)
