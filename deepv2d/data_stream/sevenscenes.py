@@ -49,14 +49,14 @@ class SevenScenes(Dataset):
             image, cam = self.db.load_sample(self.file_paths[otherid], 480, 640)
             pose, intrinsics = cam
             images.append(image)
-            pose = np.linalg.inv(pose)  # todo:check?
+            # pose = np.linalg.inv(pose)  # todo:check?
             poses.append(pose)
         poses = np.stack(poses)
 
         pose1 = self.db.load_sample(self.file_paths[imageid_1], 480, 640)[1][0]
         pose2 = self.db.load_sample(self.file_paths[imageid_2], 480, 640)[1][0]
-        pose1 = np.linalg.inv(pose1)
-        pose2 = np.linalg.inv(pose2)
+        # pose1 = np.linalg.inv(pose1)
+        # pose2 = np.linalg.inv(pose2)
         pose_gt = np.dot(pose2, np.linalg.inv(pose1))
 
         images = np.stack(images, axis=0).astype(np.uint8)
