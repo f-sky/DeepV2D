@@ -75,8 +75,8 @@ def reconstruct_one_scene(scene_idx):
     # print("Extract a triangle mesh from the volume and visualize it.")
     mesh: o3d.geometry.TriangleMesh = volume.extract_triangle_mesh()
     mesh.compute_vertex_normals()
-
-    o3d.io.write_triangle_mesh(output_path + '.ply', mesh)
+    os.makedirs(osp.dirname(output_path), exist_ok=True)
+    o3d.io.write_triangle_mesh(output_path, mesh)
 
 
 def main():
