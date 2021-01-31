@@ -3,11 +3,11 @@ from copy import copy
 import numpy as np
 import os
 import cv2
-import torch
-from torch.utils.data import Dataset
+# import torch
+# from torch.utils.data import Dataset
 
 
-class SevenScenes(Dataset):
+class SevenScenes:
 
     def __len__(self) -> int:
         return len(self.test_data)
