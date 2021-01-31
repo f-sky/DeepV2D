@@ -28,7 +28,14 @@ def reconstruct_one_scene(scene_idx):
 
     output_path = f'{depth_dir}_mesh/{ss.scene}/{ss.seq}.ply'
 
-    paths = list(os.listdir(scannet_output))
+    paths = list(os.listdir(depth_dir))
+
+    for scene_name, imgid1, imgid2 in ss.test_data:
+        filepath = ss.file_paths[imgid1]
+        rgb, cam = ss.db.load_sample(filepath, 480, 640)
+        import pdb
+        pdb.set_trace()
+        print()
     this_scan_output_paths = list(filter(lambda path: scanid in path and 'depth' in path, paths))
     this_scan_output_paths = sorted(this_scan_output_paths, key=lambda x: int(x.split('_')[2]))
     camera_poses_gt = []
@@ -38,8 +45,6 @@ def reconstruct_one_scene(scene_idx):
     total_pose = np.eye(4)
     for path in this_scan_output_paths:
         imgid1 = int(path.split('_')[2])
-        # if imgid1 > 40:
-        #     continue
         depth_pred = zarr.load(osp.join(scannet_output, path))
         depths.append(depth_pred[0] * 1000)
 
