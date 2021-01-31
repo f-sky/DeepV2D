@@ -34,7 +34,7 @@ class SevenScenes(Dataset):
 
     def __getitem__(self, index):
         scanid, imageid_1, imageid_2 = self.test_data[index]
-        scandir = os.path.join(self.data_path, self.scene)
+
         num_frames = len(self.file_paths)
 
         images = []
@@ -46,14 +46,14 @@ class SevenScenes(Dataset):
         poses = []
         for i in [0, dt, -3 * s, -2 * s, -s, s, 2 * s, 3 * s]:
             otherid = min(max(1, i + imageid_1), num_frames - 1)
-            # image_file = os.path.join(scandir, 'color', '%d.jpg' % otherid)
-            image_file = os.path.join(self.data_path, self.scene, 'images', "{:0>5d}.jpg".format(otherid))
-            image = cv2.imread(image_file)
-            image = cv2.resize(image, (640, 480))
+            image, pose = self.db.load_sample(self.file_paths[otherid], 480, 640)
+            # image_file = os.path.join(self.data_path, self.scene, 'images', "{:0>5d}.jpg".format(otherid))
+            # image = cv2.imread(image_file)
+            # image = cv2.resize(image, (640, 480))
             images.append(image)
-            pose = np.loadtxt(os.path.join(self.data_path, self.scene, 'poses', "{:0>5d}.txt".format(otherid)),
-                              dtype='f', delimiter=' ')
-            pose = np.linalg.inv(pose)
+            # pose = np.loadtxt(os.path.join(self.data_path, self.scene, 'poses', "{:0>5d}.txt".format(otherid)),
+            #                   dtype='f', delimiter=' ')
+            pose = np.linalg.inv(pose)  # todo:check?
             poses.append(pose)
         poses = np.stack(poses)
 
@@ -148,7 +148,7 @@ class LoadSevenScenes(object):
 
         cam = self.scale_cam(cam, scale_x, scale_y)
         rgb = self.scale_img(rgb, image_height_expected, image_width_expected, 'linear')
-        rgb = self.normalize_image(rgb)
+        # rgb = self.normalize_image(rgb)
         # depth = self.scale_img(depth, image_height_expected, image_width_expected, 'nearest')
 
         # rgb, depth, cam = self.toTensor(rgb, depth, cam)
@@ -221,3 +221,13 @@ class LoadSevenScenes(object):
         new_cam[1][1][2] *= scale_y
 
         return new_cam
+
+
+def main():
+    ss = SevenScenes('/data/7scenes', 0)
+    print('len', len(ss))
+    print(ss[0])
+
+
+if __name__ == '__main__':
+    main()

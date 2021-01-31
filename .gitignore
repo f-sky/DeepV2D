@@ -10,3 +10,4 @@ models
 tmp
 *.tfrecords
 *.pkl
+.idea
